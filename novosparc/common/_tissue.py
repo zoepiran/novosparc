@@ -8,11 +8,12 @@ class Tissue():
 	"""The class that handles the processes for the tissue reconstruction. It is responsible for keeping
 	the data, creating the reconstruction and saving the results."""
 
-	def __init__(self, dataset, locations, atlas_matrix=None, output_folder=None):
+	def __init__(self, dataset, locations, atlas_matrix=None, soft_freq_atlas_matrix=None,output_folder=None):
 		"""Initialize the tissue using the dataset and locations.
 		dataset -- Anndata object for the single cell data
 		locations -- target space locations
 		atlas_matrix -- optional atlas matrix
+		soft_freq_atlas_matrix -- optional (soft priors) on the frequency of cells expressing gene i
 		output_folder -- folder path to save the plots and data"""
 		self.dataset = dataset
 		self.dge = dataset.X
@@ -21,6 +22,7 @@ class Tissue():
 		self.num_locations = locations.shape[0]
 		self.gene_names = np.array(dataset.var.index.tolist())
 		self.atlas_matrix = atlas_matrix
+		self.soft_freq_atlas_matrix = soft_freq_atlas_matrix
 
 		# if the output folder does not exist, create one
 		if output_folder is not None and not os.path.exists(output_folder):
@@ -49,7 +51,7 @@ class Tissue():
 		# if there are marker genes, calculate the cost
 		else:
 			cost_marker_genes = cdist(self.dge[:, markers_to_use] / np.amax(self.dge[:, markers_to_use]),
-                                      self.atlas_matrix / np.amax(self.atlas_matrix))
+									  self.atlas_matrix / np.amax(self.atlas_matrix))
 			dge = self.dge[:, np.setdiff1d(np.arange(self.dge.shape[1]), markers_to_use)]
 			self.num_markers = len(markers_to_use)
 
